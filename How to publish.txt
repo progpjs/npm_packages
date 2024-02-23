@@ -1,0 +1,4 @@
+Do "npm login" the first time in order to login as "progpjs.team".
+Update version inside package.json
+Do npm publish --access=public" to publish.
+-> Need 2Factor Auth
