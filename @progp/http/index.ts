@@ -261,26 +261,69 @@ export class HttpRequest {
     }
 }
 
+export interface HttCertificate {
+    hostName: string
+    certFilePath?: string
+    keyFilePath?: string
+    useDevCertificate?: boolean
+}
+
 export interface HttpServerConfig {
+    enableHttps?: boolean
+    certificates: HttCertificate[]
 }
 
 export class HttpServer {
     private readonly serverPort: number;
     private isStarted: boolean = false;
+    private config: HttpServerConfig|undefined;
 
     constructor(serverPort: number) {
         this.serverPort = serverPort;
     }
 
     configure(config: HttpServerConfig) {
-        // Return false if the server is already started.
-        if (!modHttp.configureServer(this.serverPort, config)) {
-            this.isStarted = true;
+        this.config = config
+    }
+
+    addHttpsDevCertificate(hostName: string) {
+        if (!this.config) {
+            this.config = {
+                enableHttps: true,
+                certificates: []
+            }
         }
+
+        this.config!.certificates.push({
+            hostName: hostName,
+            useDevCertificate: true
+        });
+    }
+
+    addHttpsCertificate(hostName: string, certFilePath: string, keyFilePath: string) {
+        if (!this.config) {
+            this.config = {
+                enableHttps: true,
+                certificates: []
+            }
+        }
+
+        this.config!.certificates.push({
+            hostName: hostName,
+            certFilePath: certFilePath,
+            keyFilePath: keyFilePath
+        });
     }
 
     start() {
         if (this.isStarted) return;
+
+        if (this.config && !modHttp.configureServer(this.serverPort, this.config)) {
+            // configureServer returns false if the server is already started.
+            this.isStarted = true;
+            return;
+        }
+
         modHttp.startServer(this.serverPort);
         this.isStarted = true;
     }
