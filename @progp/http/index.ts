@@ -266,6 +266,9 @@ export interface HttCertificate {
     certFilePath?: string
     keyFilePath?: string
     useDevCertificate?: boolean
+
+    useLetsEncrypt: boolean,
+    cacheDir: string
 }
 
 export interface HttpServerConfig {
@@ -312,6 +315,21 @@ export class HttpServer {
             hostName: hostName,
             certFilePath: certFilePath,
             keyFilePath: keyFilePath
+        });
+    }
+
+    addLetEncryptCertificate(hostName: string, cacheDir: string) {
+        if (!this.config) {
+            this.config = {
+                enableHttps: true,
+                certificates: []
+            }
+        }
+
+        this.config!.certificates.push({
+            hostName: hostName,
+            useLetsEncrypt: true,
+            cacheDir: cacheDir
         });
     }
 
