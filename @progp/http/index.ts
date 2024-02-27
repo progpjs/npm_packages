@@ -263,12 +263,12 @@ export class HttpRequest {
 
 export interface HttCertificate {
     hostName: string
+
     certFilePath?: string
     keyFilePath?: string
-    useDevCertificate?: boolean
 
-    useLetsEncrypt: boolean,
-    cacheDir: string
+    useLetsEncrypt?: boolean,
+    cacheDir?: string
 }
 
 export interface HttpServerConfig {
@@ -289,20 +289,16 @@ export class HttpServer {
         this.config = config
     }
 
-    addHttpsDevCertificate(hostName: string) {
-        if (!this.config) {
-            this.config = {
-                enableHttps: true,
-                certificates: []
-            }
-        }
-
-        this.config!.certificates.push({
-            hostName: hostName,
-            useDevCertificate: true
-        });
-    }
-
+    /**
+     * Register a https certificate.
+     *
+     * To create your dev certificate:
+     * 1- Install mkcert from https://github.com/FiloSottile/mkcert
+     * 2- mkcert -install		--> to do one time, create the root CA certificate, which is required to create your own test certificate.
+     * 3- mkcert myhostname     --> create a valid certificate (here you can replace myhostname by localhost).
+     *
+     * Automatic dev certificate isn't supported anymore since it introduce difficult behaviors.
+     */
     addHttpsCertificate(hostName: string, certFilePath: string, keyFilePath: string) {
         if (!this.config) {
             this.config = {
