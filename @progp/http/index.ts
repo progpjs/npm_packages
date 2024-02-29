@@ -46,13 +46,16 @@ interface ModHttpServer {
 
     requestReadFormFile(resId: SharedResource, fieldName: string, fileId: number, callback: Function): any;
     requestSaveFormFile(resId: SharedResource, fieldName: string, fileId: number, saveFilePath: string, callback: Function): void;
+
+    sendFile(resId: SharedResource, filePath: string): void
+    sendFileAsIs(resId: SharedResource, filePath: string, mimeType: string, contentEncoding: string): void
 }
 
 interface CookieOptions {
     isHttpOnly?:   boolean
     isSecure?:     boolean
     sameSiteType?: number
-    domaine?:      string
+    domain?:       string
     expireTime?:   number
     maxAge?:       number
 }
@@ -106,6 +109,16 @@ export class HttpRequest {
 
     returnHtml(httpCode: number, value: string) {
         modHttp.returnString(this.resId, httpCode, this._contentType, value);
+    }
+
+    sendFile(filePath: string) {
+        modHttp.sendFile(this.resId, filePath);
+    }
+
+    sendFileAsIs(filePath: string, mimeType?: string, contentEncoding?: string) {
+        if (mimeType===undefined) mimeType = "";
+        if (contentEncoding===undefined) contentEncoding = "";
+        modHttp.sendFileAsIs(this.resId, filePath, mimeType, contentEncoding);
     }
 
     setHeader(key: string, value: string) {
