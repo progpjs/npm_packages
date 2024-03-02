@@ -292,6 +292,11 @@ export interface HttCertificate {
 }
 
 export interface HttpServerConfig {
+    /**
+     * Allows to hide server error and don't write message in the console.
+     * It's important to hide error, without what attackers can slow down the server by a lot with fake calls.
+     */
+    hideErrors?: boolean
     enableHttps?: boolean
     certificates: HttCertificate[]
 }
