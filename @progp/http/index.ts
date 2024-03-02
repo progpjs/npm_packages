@@ -55,7 +55,7 @@ interface ModHttpServer {
 
     fetch(url: string, options: FetchOptions, callback: Function): void;
 
-    proxyTo(resId: SharedResource, fromPath: string, targetUrl: string, options: ProxyTypeOptions): void
+    proxyTo(resId: SharedResource, fromPath: string, targetHost: string, options: ProxyTypeOptions): void
 }
 
 interface CookieOptions {
@@ -453,11 +453,11 @@ export class HttpHost {
         this.verb("POST", requestPath, handler);
     }
 
-    proxyTo(fromPath: string, targetUrl: string, options?: ProxyTypeOptions) {
+    proxyTo(fromPath: string, targetHost: string, options?: ProxyTypeOptions) {
         if (!fromPath) fromPath = "/";
         if (!options) options = {};
 
-        modHttp.proxyTo(this.hostResId, fromPath, targetUrl, options)
+        modHttp.proxyTo(this.hostResId, fromPath, targetHost, options)
     }
 }
 
