@@ -39,7 +39,6 @@ interface ModHttpServer {
     requestQueryArgs(resId: SharedResource): any;
     requestPostArgs(resId: SharedResource): any;
     requestWildcards(resId: SharedResource): string[]|null;
-    requestRemainingSegments(resId: SharedResource): string[]|null;
     requestCookie(resId: SharedResource, name: string): HttpCookie|null;
     requestHeaders(resId: SharedResource): any;
     requestCookies(resId: SharedResource): {[key:string]:HttpCookie};
@@ -56,6 +55,7 @@ interface ModHttpServer {
     fetch(url: string, options: FetchOptions, callback: Function): void;
 
     proxyTo(resId: SharedResource, fromPath: string, targetHost: string, options: ProxyTypeOptions): void
+    serveFiles(resId: SharedResource, fromPath: string, dirPath: string, options: ServeFileOptions): void
 }
 
 interface CookieOptions {
@@ -100,7 +100,6 @@ export class HttpRequest {
     private _requestQueryArgs: any|undefined;
     private _requestPostArgs: any|undefined;
     private _requestWildcards: string[]|null|undefined;
-    private _requestRemainingSegments: string[]|null|undefined;
     private _requestHeaders: any|undefined;
     private _requestCookies: {[key:string]:HttpCookie}|undefined;
     private _contentType: string = "text/html";
@@ -250,14 +249,6 @@ export class HttpRequest {
         return this._requestWildcards;
     }
 
-    requestRemainingSegments(): any {
-        if (this._requestRemainingSegments===undefined) {
-            return this._requestRemainingSegments = modHttp.requestRemainingSegments(this.resId);
-        }
-
-        return this._requestRemainingSegments;
-    }
-
     requestCookies(): {[key:string]:HttpCookie} {
         if (this._requestCookies===undefined) {
             let res = modHttp.requestCookies(this.resId);
@@ -365,6 +356,10 @@ export interface ProxyTypeOptions {
     excludeSubPaths?: boolean
 }
 
+export interface ServeFileOptions {
+
+}
+
 export class HttpServer {
     private readonly serverPort: number;
     private isStarted: boolean = false;
@@ -463,6 +458,13 @@ export class HttpHost {
         if (!options) options = {};
 
         modHttp.proxyTo(this.hostResId, fromPath, targetHost, options)
+    }
+
+    serveFiles(fromPath: string, dirPath: string, options?: ServeFileOptions) {
+        if (!fromPath) fromPath = "/";
+        if (!options) options = {};
+
+        modHttp.serveFiles(this.hostResId, fromPath, dirPath, options)
     }
 }
 
