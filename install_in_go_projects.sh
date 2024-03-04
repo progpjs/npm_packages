@@ -11,3 +11,4 @@ cp -r ./@progp/nodejs   ../progpjs.modules/modNodeJs/embed/jsMods/@progp
 
 cp -r ./@progp/jsondb   ../progpjs.jsondb/embed/jsMods/@progp
 
+cd ../progpjs.dev/__javascript && npm run linkdev

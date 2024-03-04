@@ -59,6 +59,8 @@ interface ModFS {
     appendFileSyncBuffer(filePath: string, data: ArrayBuffer, mode: number, flag: number): void
     readlinkSync(filePath: string): string;
     realpath(filePath: string): string;
+
+    writeFileSyncText(filePath: string, data: string): void
 }
 
 const modFS = progpGetModule<ModFS>("nodejsModFS")!;
@@ -188,7 +190,7 @@ function fsOctalStringToInt(mode: string): number {
 // [ ] fs.closeSync(fd)
 // [ ] fs.opendirSync(path[, options])
 // [ ] fs.readSync(fd, buffer, offset, length[, position])
-// [ ] fs.writeFileSync(file, data[, options])
+// [e] fs.writeFileSync(file, data[, options])                      <-- partiellement implémenté
 // [ ] fs.writeSync(fd, buffer, offset[, length[, position]])
 
 //endregion
@@ -270,8 +272,13 @@ export function appendFileSync(filePath: string, data: string|Buffer, mode: numb
     if (typeof(flag) == "string") nFlag  = fsOctalStringToInt(flag);
     else nFlag = <number>flag;
 
-    if (data instanceof Buffer) modFS.appendFileSyncBuffer(filePath, data, mode, nFlag);
-    else modFS.appendFileSyncText(filePath, <string>data, mode, nFlag);
+    if (typeof(data)=="string") modFS.appendFileSyncText(filePath, <string>data, mode, nFlag);
+    else modFS.appendFileSyncBuffer(filePath, data, mode, nFlag);
+
+}
+
+export function writeFileSync(filePath: string, content: string) {
+    modFS.writeFileSyncText(filePath, content)
 }
 
 //endregion
