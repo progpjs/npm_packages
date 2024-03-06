@@ -51,16 +51,19 @@ interface ModFS {
     mkdtempSync(dirPath: string, prefix: string): string
     mkdtempAsync(dirPath: string, prefix: string, callback: Function): void
 
+    rmSync(dirPath: string, recursive: boolean, force: boolean): void
+    rmAsync(dirPath: string, recursive: boolean, force: boolean, callback: Function): void
+
     readFileUtf8Sync(path: string): string
     readFileBytesSync(path: string): ArrayBuffer
     renameSync(oldPath: string, newPath: string): void
-    rmSync(dirPath: string, recursive: boolean, force: boolean): void
     appendFileSyncText(filePath: string, data: string, mode: number, flag: number): void
     appendFileSyncBuffer(filePath: string, data: ArrayBuffer, mode: number, flag: number): void
     readlinkSync(filePath: string): string;
     realpath(filePath: string): string;
 
     writeFileSyncText(filePath: string, data: string): void
+    writeFileText(filePath: string, data: string, callback: Function): void
 }
 
 const modFS = progpGetModule<ModFS>("nodejsModFS")!;
@@ -253,6 +256,7 @@ export function mkdirSync(dirPath: string, options?: MkDirSyncOptions) {
     modFS.mkdirSync(dirPath, recursive, flag);
 }
 
+// https://nodejs.org/api/fs.html#fsrmpath-options-callback
 export function rmSync(dirPath: string, options?: RmSyncOptions) {
     let recursive = false, force = false;
 
@@ -277,6 +281,7 @@ export function appendFileSync(filePath: string, data: string|Buffer, mode: numb
 
 }
 
+// https://nodejs.org/api/fs.html#fswritefilesyncfile-data-options
 export function writeFileSync(filePath: string, content: string) {
     modFS.writeFileSyncText(filePath, content)
 }
@@ -298,9 +303,9 @@ export function writeFileSync(filePath: string, content: string) {
 // [x] fs.symlink
 // [x] fs.unlink
 // [x] fs.mkdir
+// [ ] fs.rmdir
 // [ ] fs.mkdtemp
 // [ ] fs.rename
-// [ ] fs.rmdir
 // [ ] fs.rmS
 // [ ] fs.readFile
 // [ ] fs.appendFile
@@ -342,7 +347,7 @@ export function access(path: string, mode: number|Function, callback: Function) 
     return modFS.accessAsync(path, mode, callback);
 }
 
-export function mkdir(dirPath: string, options: MkDirSyncOptions|undefined, callback?: Function) {
+export function mkdir(dirPath: string, options: MkDirSyncOptions|Function|undefined, callback?: Function) {
     if (options instanceof Function) {
         callback = options;
         options = undefined;
@@ -352,7 +357,9 @@ export function mkdir(dirPath: string, options: MkDirSyncOptions|undefined, call
     let flag = 0o777;
 
     if (options) {
-        if (options.recursive!==undefined) recursive = !!options.recursive
+        if (options.recursive!==undefined) { // noinspection PointlessBooleanExpressionJS
+            recursive = !!options.recursive
+        }
 
         if (options.mode!==undefined) {
             if (typeof(options.mode)=="string") {
@@ -364,6 +371,28 @@ export function mkdir(dirPath: string, options: MkDirSyncOptions|undefined, call
     modFS.mkdirAsync(dirPath, recursive, flag, callback!);
 }
 
+export function writeFile(filePath: string, content: string, callback?: Function) {
+    modFS.writeFileText(filePath, content, callback);
+}
+
+// https://nodejs.org/api/fs.html#fsrmpath-options-callback
+export function rm(dirPath: string, options: RmSyncOptions|Function|undefined, callback: Function) {
+    if (options instanceof Function) {
+        callback = options;
+        options = undefined;
+    }
+
+    let recursive = false, force = false;
+
+    if (options) {
+        if (options.recursive!==undefined) recursive = !!options.recursive
+        if (options.force!==undefined) force = !!options.force
+    }
+
+    modFS.rmAsync(dirPath, recursive, force, callback);
+}
+
+
 export const chmod = modFS.chmodAsync
 export const chown = modFS.chownAsync
 export const truncate = modFS.truncateAsync;
@@ -372,6 +401,9 @@ export const link = modFS.linkSync;
 export const symlink = modFS.symlinkAsync;
 export const unlink = modFS.unlinkAsync;
 export const mkdtemp = modFS.mkdtempAsync;
+
+// https://nodejs.org/api/fs.html#fspromisesrmdirpath-options
+export const rmdir = rm;
 
 //endregion
 
@@ -398,6 +430,9 @@ export default {
     readlinkSync: readlinkSync,
     realpath: realpath,
 
+    mkdirSync: mkdirSync,
+    writeFileSync: writeFileSync,
+
     //endregion
 
     exists: exists,
@@ -412,4 +447,5 @@ export default {
     unlink: unlink,
     mkdir: mkdir,
     mkdtemp: mkdtemp,
+    rmdir: rmdir
 }
